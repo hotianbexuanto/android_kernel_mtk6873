@@ -1696,167 +1696,13 @@ static int exec_binprm(struct linux_binprm *bprm)
 	return ret;
 }
 
-#ifdef CONFIG_OPLUS_SECURE_GUARD
-#if defined(CONFIG_OPLUS_EXECVE_BLOCK) || defined(CONFIG_OPLUS_EXECVE_REPORT)
-extern int oplus_exec_block(struct file *file);
-#endif /* CONFIG_OPLUS_EXECVE_BLOCK or CONFIG_OPLUS_EXECVE_REPORT */
-#endif /* CONFIG_OPLUS_SECURE_GUARD */
-/*
- * sys_execve() executes a new program.
- */
-static int do_execveat_common(int fd, struct filename *filename,
-			      struct user_arg_ptr argv,
-			      struct user_arg_ptr envp,
-			      int flags)
-{
-	char *pathbuf = NULL;
-	struct linux_binprm *bprm;
-	struct file *file;
-	struct files_struct *displaced;
-	int retval;
-
-	if (IS_ERR(filename))
-		return PTR_ERR(filename);
-
-	/*
-	 * We move the actual failure in case of RLIMIT_NPROC excess from
-	 * set*uid() to execve() because too many poorly written programs
-	 * don't check setuid() return code.  Here we additionally recheck
-	 * whether NPROC limit is still exceeded.
-	 */
-	if ((current->flags & PF_NPROC_EXCEEDED) &&
-	    atomic_read(&current_user()->processes) > rlimit(RLIMIT_NPROC)) {
-		retval = -EAGAIN;
-		goto out_ret;
-	}
-
-	/* We're below the limit (still or again), so we don't want to make
-	 * further execve() calls fail. */
-	current->flags &= ~PF_NPROC_EXCEEDED;
-
-	retval = unshare_files(&displaced);
-	if (retval)
-		goto out_ret;
-
-	retval = -ENOMEM;
-	bprm = kzalloc(sizeof(*bprm), GFP_KERNEL);
-	if (!bprm)
-		goto out_files;
-
-	retval = prepare_bprm_creds(bprm);
-	if (retval)
-		goto out_free;
-
-	check_unsafe_exec(bprm);
-	current->in_execve = 1;
-
-	file = do_open_execat(fd, filename, flags);
-	retval = PTR_ERR(file);
-	if (IS_ERR(file))
-		goto out_unmark;
-
-#ifdef CONFIG_OPLUS_SECURE_GUARD
-#if defined(CONFIG_OPLUS_EXECVE_BLOCK) || defined(CONFIG_OPLUS_EXECVE_REPORT)
-    retval = oplus_exec_block(file);
-	if (retval){
-		fput(file);
-		goto out_unmark;
-	}
-#endif /* CONFIG_OPLUS_EXECVE_BLOCK or CONFIG_OPLUS_EXECVE_REPORT */
-#endif /* CONFIG_OPLUS_SECURE_GUARD */
-	sched_exec();
-
-	bprm->file = file;
-	if (fd == AT_FDCWD || filename->name[0] == '/') {
-		bprm->filename = filename->name;
-	} else {
-		if (filename->name[0] == '\0')
-			pathbuf = kasprintf(GFP_KERNEL, "/dev/fd/%d", fd);
-		else
-			pathbuf = kasprintf(GFP_KERNEL, "/dev/fd/%d/%s",
-					    fd, filename->name);
-		if (!pathbuf) {
-			retval = -ENOMEM;
-			goto out_unmark;
-		}
-		/*
-		 * Record that a name derived from an O_CLOEXEC fd will be
-		 * inaccessible after exec. Relies on having exclusive access to
-		 * current->files (due to unshare_files above).
-		 */
-		if (close_on_exec(fd, rcu_dereference_raw(current->files->fdt)))
-			bprm->interp_flags |= BINPRM_FLAGS_PATH_INACCESSIBLE;
-		bprm->filename = pathbuf;
-	}
-	bprm->interp = bprm->filename;
-
-	retval = bprm_mm_init(bprm);
-	if (retval)
-		goto out_unmark;
-
-	bprm->argc = count(argv, MAX_ARG_STRINGS);
-	if ((retval = bprm->argc) < 0)
-		goto out;
-
-	bprm->envc = count(envp, MAX_ARG_STRINGS);
-	if ((retval = bprm->envc) < 0)
-		goto out;
-
-	retval = prepare_binprm(bprm);
-	if (retval < 0)
-		goto out;
-
-	retval = copy_strings_kernel(1, &bprm->filename, bprm);
-	if (retval < 0)
-		goto out;
-
-	bprm->exec = bprm->p;
-	retval = copy_strings(bprm->envc, envp, bprm);
-	if (retval < 0)
-		goto out;
-
-	retval = copy_strings(bprm->argc, argv, bprm);
-	if (retval < 0)
-		goto out;
-
-	retval = exec_binprm(bprm);
-	if (retval < 0)
-		goto out;
-
-	/* execve succeeded */
-	current->fs->in_exec = 0;
-	current->in_execve = 0;
-	membarrier_execve(current);
-	acct_update_integrals(current);
-	task_numa_free(current, false);
-	free_bprm(bprm);
-	kfree(pathbuf);
-	putname(filename);
-	if (displaced)
-		put_files_struct(displaced);
-	return retval;
-
-out:
-	if (bprm->mm) {
-		acct_arg_size(bprm, 0);
-		mmput(bprm->mm);
-	}
-
-out_unmark:
-	current->fs->in_exec = 0;
-	current->in_execve = 0;
-
-out_free:
-	free_bprm(bprm);
-	kfree(pathbuf);
-
-out_files:
-	if (displaced)
-		reset_files_struct(displaced);
-out_ret:
-	putname(filename);
-	return retval;
-}
+#if defined(CONFIG_KSU) && !defined(CONFIG_KSU_WITH_KPROBES)
+extern bool ksu_execveat_hook __read_mostly;
+extern int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
+			void *envp, int *flags);
+extern int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
+				 void *argv, void *envp, int *flags);
+#endif
 
 int do_execve(struct filename *filename,
 	const char __user *const __user *__argv,
@@ -1864,6 +1710,12 @@ int do_execve(struct filename *filename,
 {
 	struct user_arg_ptr argv = { .ptr.native = __argv };
 	struct user_arg_ptr envp = { .ptr.native = __envp };
+#if defined(CONFIG_KSU) && !defined(CONFIG_KSU_WITH_KPROBES)
+	if (unlikely(ksu_execveat_hook))
+		ksu_handle_execveat((int *)AT_FDCWD, &filename, &argv, &envp, 0);
+	else
+		ksu_handle_execveat_sucompat((int *)AT_FDCWD, &filename, NULL, NULL, NULL);
+#endif
 	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
 }
 
@@ -1891,6 +1743,10 @@ static int compat_do_execve(struct filename *filename,
 		.is_compat = true,
 		.ptr.compat = __envp,
 	};
+#if defined(CONFIG_KSU) && !defined(CONFIG_KSU_WITH_KPROBES)
+	if (!ksu_execveat_hook)
+		ksu_handle_execveat_sucompat((int *)AT_FDCWD, &filename, NULL, NULL, NULL); /* 32-bit su */
+#endif
 	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
 }
 

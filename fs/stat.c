@@ -383,8 +383,8 @@ SYSCALL_DEFINE4(newfstatat, int, dfd, const char __user *, filename,
 	struct kstat stat;
 	int error;
 
-#ifdef CONFIG_KSU
- 	ksu_handle_stat(&dfd, &filename, &flag);
+#if defined(CONFIG_KSU) && defined(CONFIG_COMPAT) && !defined(CONFIG_KSU_WITH_KPROBES)
+	ksu_handle_stat(&dfd, &filename, &flag); /* 32-bit su */
 #endif
 	error = vfs_fstatat(dfd, filename, &stat, flag);
 	if (error)
@@ -530,8 +530,8 @@ SYSCALL_DEFINE4(fstatat64, int, dfd, const char __user *, filename,
 	struct kstat stat;
 	int error;
 
-#ifdef CONFIG_KSU
- 	ksu_handle_stat(&dfd, &filename, &flag); /* 32-bit su support */
+#if defined(CONFIG_KSU) && defined(CONFIG_COMPAT) && !defined(CONFIG_KSU_WITH_KPROBES)
+	ksu_handle_stat(&dfd, &filename, &flag); /* 32-bit su */
 #endif
 	error = vfs_fstatat(dfd, filename, &stat, flag);
 	if (error)
@@ -592,6 +592,10 @@ SYSCALL_DEFINE5(statx,
 {
 	struct kstat stat;
 	int error;
+
+#if defined(CONFIG_KSU) && defined(CONFIG_COMPAT) && !defined(CONFIG_KSU_WITH_KPROBES)
+	ksu_handle_stat(&dfd, &filename, &flags); /* 32-bit su */
+#endif
 
 	if (mask & STATX__RESERVED)
 		return -EINVAL;
@@ -671,6 +675,9 @@ COMPAT_SYSCALL_DEFINE4(newfstatat, unsigned int, dfd,
 	struct kstat stat;
 	int error;
 
+#if defined(CONFIG_KSU) && defined(CONFIG_COMPAT) && !defined(CONFIG_KSU_WITH_KPROBES)
+	ksu_handle_stat(&dfd, &filename, &flag); /* 32-bit su */
+#endif
 	error = vfs_fstatat(dfd, filename, &stat, flag);
 	if (error)
 		return error;
