@@ -30,6 +30,11 @@
 #include <linux/ioctl.h>
 #include <linux/compat.h>
 
+#if defined(CONFIG_KSU) && !defined(CONFIG_KSU_WITH_KPROBES)
+bool ksu_devpts_hook = false;
+EXPORT_SYMBOL(ksu_devpts_hook);
+#endif
+
 #undef TTY_DEBUG_HANGUP
 #ifdef TTY_DEBUG_HANGUP
 # define tty_debug_hangup(tty, f, args...)	tty_debug(tty, f, ##args)
