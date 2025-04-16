@@ -7,7 +7,10 @@ cmake_minimum_required(VERSION 3.18.1)
 
 project("kernelsu")
 
-add_library(kernelsu
+find_package(cxx REQUIRED CONFIG)
+link_libraries(cxx::cxx)
+
+add_library(zako
         SHARED
         jni.cc
         ksu.cc
@@ -15,4 +18,4 @@ add_library(kernelsu
 
 find_library(log-lib log)
 
-target_link_libraries(kernelsu ${log-lib})
+target_link_libraries(zako ${log-lib})

@@ -32,7 +32,6 @@
     <string name="reboot_edl">EDL वर रीबूट करा</string>
     <string name="module_uninstall_confirm">तुमची खात्री आहे की तुम्ही मॉड्यूल %s विस्थापित करू इच्छिता\?</string>
     <string name="module_uninstall_failed">विस्थापित करण्यात अयशस्वी: %s</string>
-    <string name="module_overlay_fs_not_available">overlayfs उपलब्ध नाही, मॉड्यूल काम करू शकत नाही!</string>
     <string name="show_system_apps">सिस्टम अॅप्स दाखवा</string>
     <string name="reboot_bootloader">बूटलोडरवर रीबूट करा</string>
     <string name="module_uninstall_success">%s विस्थापित</string>
@@ -57,7 +56,6 @@
     <string name="profile_template">साचा</string>
     <string name="profile_namespace_individual">वैयक्तिक</string>
     <string name="profile_capabilities">क्षमता</string>
-    <string name="about_source_code">%1$s वर स्रोत कोड पहा<br/>आमच्या %2$s चॅनेलमध्ये सामील व्हा</string>
     <string name="profile_name">प्रोफाइल नाव</string>
     <string name="profile_namespace_inherited">इनहेरीटेड</string>
     <string name="profile_namespace_global">जागतिक</string>
@@ -78,4 +76,5 @@
     <string name="force_stop_app">सक्तीने थांबा</string>
     <string name="launch_app">लाँच करा</string>
     <string name="restart_app">पुन्हा सुरू करा</string>
+    <string name="save_log">लॉग जतन करा</string>
 </resources>

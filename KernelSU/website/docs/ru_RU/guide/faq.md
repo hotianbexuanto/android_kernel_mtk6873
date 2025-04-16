@@ -16,11 +16,11 @@
 
 ## Поддерживает ли KernelSU Xposed?
 
-Да, [Dreamland](https://github.com/canyie/Dreamland) и [TaiChi](https://taichi.cool) работают. Что касается LSPosed, то его можно заставить работать с помощью [Zygisk на KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU)
+Да, [Dreamland](https://github.com/canyie/Dreamland) и [TaiChi](https://taichi.cool) работают. Что касается LSPosed, то его можно заставить работать с помощью [Zygisk на KernelSU](https://github.com/Dr-TSNG/ZygiskNext)
 
 ## Поддерживает ли KernelSU Zygisk?
 
-KernelSU не имеет встроенной поддержки Zygisk, но вы можете использовать [Zygisk на KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU).
+KernelSU не имеет встроенной поддержки Zygisk, но вы можете использовать [Zygisk на KernelSU](https://github.com/Dr-TSNG/ZygiskNext).
 
 ## Совместим ли KernelSU с Magisk?
 
@@ -60,7 +60,7 @@ KernelSU не имеет встроенной поддержки Zygisk, но в
 Сейчас нет (возможно, в будущем), но есть много способов переключиться на глобальное пространство имен монтирования вручную, например:
 
 1. `nsenter -t 1 -m sh` для получения оболочки в глобальном пространстве имен монтирования.
-2. Добавить `nsenter --mount=/proc/1/ns/mnt` к команде, которую вы хотите выполнить, тогда команда будет выполнена в глобальном пространстве имен монтирования. KernelSU также [использует этот способ](https://github.com/tiann/KernelSU/blob/77056a710073d7a5f7ee38f9e77c9fd0b3256576/manager/app/src/main/java/me/weishu/kernelsu/ui/util/KsuCli.kt#L115)
+2. Добавить `nsenter --mount=/proc/1/ns/mnt` к команде, которую вы хотите выполнить, тогда команда будет выполнена в глобальном пространстве имен монтирования. KernelSU также [использует этот способ](https://github.com/tiann/KernelSU/blob/77056a710073d7a5f7ee38f9e77c9fd0b3256576/manager/app/src/main/java/shirkneko/zako/mksu/ui/util/KsuCli.kt#L115)
 
 ## Я GKI1.0, могу ли я использовать это?
 

@@ -1,4 +1,4 @@
-# 如何构建 KernelSU?
+# 如何构建 KernelSU？
 
 首先，您应该阅读内核构建的 Android 官方文档：
 
@@ -44,22 +44,20 @@ tools/bazel build --config=fast //common:kernel_aarch64_dist
 
 如果您可以成功构建内核，那么构建 KernelSU 就很容易，根据自己的需求在内核源代码根目录中运行以下任一命令：
 
-- 最新tag(稳定版本)
+::: code-group
 
-```sh
+```sh[最新 tag(稳定版本)]
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
 ```
 
-- main分支(开发版本)
-
-```sh
+```sh[main 分支(开发版本)]
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
 ```
 
-- 指定tag(比如v0.5.2)
-
-```sh
+```sh[指定 tag(比如 v0.5.2)]
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
 ```
+
+:::
 
 然后重建内核，您将获得带有 KernelSU 的内核映像！

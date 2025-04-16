@@ -1,16 +1,20 @@
 mod apk_sign;
 mod assets;
+mod boot_patch;
 mod cli;
 mod debug;
 mod defs;
-mod event;
-mod ksu;
+mod init_event;
+mod ksucalls;
+#[cfg(target_os = "android")]
+mod magic_mount;
 mod module;
-mod mount;
 mod profile;
 mod restorecon;
 mod sepolicy;
+mod su;
 mod utils;
+mod kpm;
 
 fn main() -> anyhow::Result<()> {
     cli::run()

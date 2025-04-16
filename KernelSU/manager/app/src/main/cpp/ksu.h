@@ -17,6 +17,8 @@ bool uid_should_umount(int uid);
 
 bool is_safe_mode();
 
+bool is_lkm_mode();
+
 #define KSU_APP_PROFILE_VER 2
 #define KSU_MAX_PACKAGE_NAME 256
 // NGROUPS_MAX for Linux is 65535 generally, but we only supports 32 groups.
@@ -76,5 +78,9 @@ struct app_profile {
 bool set_app_profile(const app_profile *profile);
 
 bool get_app_profile(p_key_t key, app_profile *profile);
+
+bool set_su_enabled(bool enabled);
+
+bool is_su_enabled();
 
 #endif //KERNELSU_KSU_H

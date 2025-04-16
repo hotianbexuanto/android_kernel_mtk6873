@@ -2,12 +2,12 @@
 <resources>
     <string name="home_fingerprint">Pirštų atspaudas</string>
     <string name="selinux_status_disabled">Išjungta</string>
-    <string name="selinux_status_enforcing">Enforcing</string>
+    <string name="selinux_status_enforcing">Priverstinas</string>
     <string name="selinux_status_unknown">Nežinomas</string>
     <string name="superuser">Supernaudotojai</string>
     <string name="module_failed_to_enable">Nepavyko įjungti modulio: %s</string>
     <string name="module_failed_to_disable">Nepavyko išjungti modulio: %s</string>
-    <string name="selinux_status_permissive">Permissive</string>
+    <string name="selinux_status_permissive">Leistinas</string>
     <string name="module_empty">Nėra įdiegtų modulių</string>
     <string name="module">Moduliai</string>
     <string name="reboot_userspace">Perkrovimas neišjungus</string>
@@ -19,7 +19,6 @@
     <string name="module_uninstall_success">%s išdiegtas</string>
     <string name="module_version">Versija</string>
     <string name="module_author">Autorius</string>
-    <string name="module_overlay_fs_not_available">overlayfs nepasiekiamas, modulis negali veikti!</string>
     <string name="show_system_apps">Rodyti sistemos programas</string>
     <string name="hide_system_apps">Slėpti sistemos programas</string>
     <string name="send_log">Siųsti žurnalą</string>
@@ -31,7 +30,6 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_learn_kernelsu">Sužinokite apie KernelSU</string>
     <string name="home_click_to_learn_kernelsu">Sužinokite, kaip įdiegti KernelSU ir naudoti modulius</string>
-    <string name="about_source_code">Peržiūrėkite šaltinio kodą %1$s<br/>Prisijunkite prie mūsų %2$s kanalo</string>
     <string name="profile_default">Numatytas</string>
     <string name="profile_template">Šablonas</string>
     <string name="profile_custom">Pasirinktinis</string>
@@ -51,9 +49,9 @@
     <string name="module_update">Atnaujinti</string>
     <string name="module_downloading">Atsisiunčiamas modulis: %s</string>
     <string name="module_start_downloading">Pradedamas atsisiuntimas: %s</string>
-    <string name="new_version_available">Nauja versija: %s pasiekiama, spustelėkite norėdami atsisiųsti</string>
+    <string name="new_version_available">Nauja versija: %s pasiekiama, spustelėkite norėdami atsinaujinti</string>
     <string name="launch_app">Paleisti</string>
-    <string name="force_stop_app">Priversti sustoti</string>
+    <string name="force_stop_app" formatted="false">Priversti sustoti</string>
     <string name="restart_app">Perkrauti</string>
     <string name="failed_to_update_sepolicy">Nepavyko atnaujinti SELinux taisyklių: %s</string>
     <string name="home">Namai</string>
@@ -78,4 +76,6 @@
     <string name="home_support_content">KernelSU yra ir visada bus nemokamas ir atvirojo kodo. Tačiau galite parodyti, kad jums rūpi, paaukodami mums.</string>
     <string name="failed_to_update_app_profile">Nepavyko atnaujinti programos profilio %s</string>
     <string name="settings_umount_modules_default_summary">Visuotinė numatytoji „Modulių atjungimo“ reikšmė programų profiliuose. Jei įjungta, ji pašalins visus sistemos modulio pakeitimus programoms, kurios neturi profilio.</string>
+    <string name="module_changelog">Keitimų žurnalas</string>
+    <string name="save_log">Saglabāt Žurnālus</string>
 </resources>
