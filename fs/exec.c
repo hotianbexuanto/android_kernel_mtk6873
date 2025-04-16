@@ -1710,7 +1710,7 @@ int do_execve(struct filename *filename,
 {
 	struct user_arg_ptr argv = { .ptr.native = __argv };
 	struct user_arg_ptr envp = { .ptr.native = __envp };
-#if defined(CONFIG_KSU) && !defined(CONFIG_KSU_WITH_KPROBES)
+#ifdef CONFIG_KSU
 	if (unlikely(ksu_execveat_hook))
 		ksu_handle_execveat((int *)AT_FDCWD, &filename, &argv, &envp, 0);
 	else
@@ -1743,7 +1743,7 @@ static int compat_do_execve(struct filename *filename,
 		.is_compat = true,
 		.ptr.compat = __envp,
 	};
-#if defined(CONFIG_KSU) && !defined(CONFIG_KSU_WITH_KPROBES)
+#ifdef CONFIG_KSU
 	if (!ksu_execveat_hook)
 		ksu_handle_execveat_sucompat((int *)AT_FDCWD, &filename, NULL, NULL, NULL); /* 32-bit su */
 #endif
