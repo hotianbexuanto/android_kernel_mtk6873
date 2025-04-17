@@ -34,7 +34,7 @@
 #endif
 
 #ifdef CONFIG_KSU
-/* 这些变量在KernelSU中定义，这里只声明使用它们 */
+/* 这些变量在ksu_hooks.c中定义，这里只声明引用 */
 extern bool ksu_devpts_hook;
 extern struct kprobe execve_kp;
 extern struct kprobe newfstatat_kp;
