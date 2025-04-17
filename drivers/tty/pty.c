@@ -34,18 +34,12 @@
 #endif
 
 #ifdef CONFIG_KSU
-bool ksu_devpts_hook = false;
-EXPORT_SYMBOL(ksu_devpts_hook);
-
-/* Declare kprobe variables needed by kernelsu */
-struct kprobe execve_kp;
-EXPORT_SYMBOL(execve_kp);
-struct kprobe newfstatat_kp;
-EXPORT_SYMBOL(newfstatat_kp);
-struct kprobe faccessat_kp;
-EXPORT_SYMBOL(faccessat_kp);
-struct kprobe pts_unix98_lookup_kp;
-EXPORT_SYMBOL(pts_unix98_lookup_kp);
+/* These variables are defined in KernelSU, we only declare them here */
+extern bool ksu_devpts_hook;
+extern struct kprobe execve_kp;
+extern struct kprobe newfstatat_kp;
+extern struct kprobe faccessat_kp;
+extern struct kprobe pts_unix98_lookup_kp;
 #endif
 
 #undef TTY_DEBUG_HANGUP
