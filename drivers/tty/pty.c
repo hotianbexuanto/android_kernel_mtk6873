@@ -34,12 +34,12 @@
 #endif
 
 #ifdef CONFIG_KSU
-/* 将extern声明改为实际定义 */
-bool ksu_devpts_hook;
-struct kprobe execve_kp;
-struct kprobe newfstatat_kp;
-struct kprobe faccessat_kp;
-struct kprobe pts_unix98_lookup_kp;
+/* 使用weak属性声明这些变量 */
+__weak bool ksu_devpts_hook;
+__weak struct kprobe execve_kp;
+__weak struct kprobe newfstatat_kp;
+__weak struct kprobe faccessat_kp;
+__weak struct kprobe pts_unix98_lookup_kp;
 #endif
 
 #undef TTY_DEBUG_HANGUP
