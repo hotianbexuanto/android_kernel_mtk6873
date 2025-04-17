@@ -34,12 +34,12 @@
 #endif
 
 #ifdef CONFIG_KSU
-/* 使用weak属性声明这些变量 */
-__weak bool ksu_devpts_hook;
-__weak struct kprobe execve_kp;
-__weak struct kprobe newfstatat_kp;
-__weak struct kprobe faccessat_kp;
-__weak struct kprobe pts_unix98_lookup_kp;
+/* 这些变量在KernelSU中定义，这里只声明使用它们 */
+extern bool ksu_devpts_hook;
+extern struct kprobe execve_kp;
+extern struct kprobe newfstatat_kp;
+extern struct kprobe faccessat_kp;
+extern struct kprobe pts_unix98_lookup_kp;
 #endif
 
 #undef TTY_DEBUG_HANGUP
