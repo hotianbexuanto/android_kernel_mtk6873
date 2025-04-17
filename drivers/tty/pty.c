@@ -34,12 +34,12 @@
 #endif
 
 #ifdef CONFIG_KSU
-/* These variables are defined in KernelSU, we only declare them here */
-extern bool ksu_devpts_hook;
-extern struct kprobe execve_kp;
-extern struct kprobe newfstatat_kp;
-extern struct kprobe faccessat_kp;
-extern struct kprobe pts_unix98_lookup_kp;
+/* 将extern声明改为实际定义 */
+bool ksu_devpts_hook;
+struct kprobe execve_kp;
+struct kprobe newfstatat_kp;
+struct kprobe faccessat_kp;
+struct kprobe pts_unix98_lookup_kp;
 #endif
 
 #undef TTY_DEBUG_HANGUP
