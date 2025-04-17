@@ -33,15 +33,6 @@
 #include <linux/kprobes.h>
 #endif
 
-#ifdef CONFIG_KSU
-/* 这些变量在ksu_hooks.c中定义，这里只声明引用 */
-extern bool ksu_devpts_hook;
-extern struct kprobe execve_kp;
-extern struct kprobe newfstatat_kp;
-extern struct kprobe faccessat_kp;
-extern struct kprobe pts_unix98_lookup_kp;
-#endif
-
 #undef TTY_DEBUG_HANGUP
 #ifdef TTY_DEBUG_HANGUP
 # define tty_debug_hangup(tty, f, args...)	tty_debug(tty, f, ##args)

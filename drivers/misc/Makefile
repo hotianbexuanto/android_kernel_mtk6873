@@ -91,5 +91,3 @@ obj-$(CONFIG_SIM_DETECT)	+= sim_detect.o
 #ifdef CONFIG_OPLUS_TRIKEY_HALL
 obj-y				+= tri_state_key/
 #endif CONFIG_OPLUS_TRIKEY_HALL
-
-obj-$(CONFIG_KSU)		+= ksu_hooks.o

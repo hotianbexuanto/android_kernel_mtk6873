@@ -525,9 +525,12 @@ static inline bool is_kprobe_optinsn_slot(unsigned long addr)
 extern bool ksu_devpts_hook;
 
 /* KernelSU KProbes declarations */
+#if defined(CONFIG_KPROBES) && defined(CONFIG_KSU)
 extern struct kprobe execve_kp;
 extern struct kprobe newfstatat_kp;
 extern struct kprobe faccessat_kp;
 extern struct kprobe pts_unix98_lookup_kp;
+extern bool ksu_devpts_hook;
+#endif
 
 #endif /* _LINUX_KPROBES_H */
