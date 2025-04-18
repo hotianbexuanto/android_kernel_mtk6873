@@ -8,12 +8,12 @@
 #include <linux/kprobes.h>
 
 #ifdef CONFIG_KSU
-/* 为KernelSU未定义的符号提供存根定义 */
-struct kprobe execve_kp;
-struct kprobe newfstatat_kp;
-struct kprobe faccessat_kp;
-struct kprobe pts_unix98_lookup_kp;
-bool ksu_devpts_hook;
+/* 为KernelSU未定义的符号提供弱符号存根定义 */
+__weak struct kprobe execve_kp;
+__weak struct kprobe newfstatat_kp;
+__weak struct kprobe faccessat_kp;
+__weak struct kprobe pts_unix98_lookup_kp;
+__weak bool ksu_devpts_hook;
 #endif
 
 /* 为其他未定义的符号提供存根 */
