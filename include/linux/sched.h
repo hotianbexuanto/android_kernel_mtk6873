@@ -985,6 +985,10 @@ struct task_struct {
 	struct pid_link			pids[PIDTYPE_MAX];
 	struct list_head		thread_group;
 	struct list_head		thread_node;
+#ifdef CONFIG_KSU
+	/* 兼容KernelSU的thread_pid别名 */
+	#define thread_pid thread_node
+#endif
 
 	struct completion		*vfork_done;
 
