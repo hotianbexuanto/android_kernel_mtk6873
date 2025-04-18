@@ -1,0 +1,22 @@
+--- fs/stat.c	2025-02-25 16:26:48.095308700 -0500
++++ fs/stat.c	2025-02-25 16:40:30.177700209 -0500
+@@ -412,6 +416,9 @@
+ 	struct kstat stat;
+ 	int error;
+ 
++#if defined(CONFIG_KSU) && !defined(CONFIG_KSU_WITH_KPROBES)
++	ksu_handle_stat(&dfd, &filename, &flag);
++#endif
+ 	error = vfs_fstatat(dfd, filename, &stat, flag);
+ 	if (error)
+ 		return error;
+@@ -563,6 +570,9 @@
+ 	struct kstat stat;
+ 	int error;
+ 
++#if defined(CONFIG_KSU) && defined(CONFIG_COMPAT) && !defined(CONFIG_KSU_WITH_KPROBES)
++	ksu_handle_stat(&dfd, &filename, &flag); /* 32-bit su */
++#endif
+ 	error = vfs_fstatat(dfd, filename, &stat, flag);
+ 	if (error)
+ 		return error;
