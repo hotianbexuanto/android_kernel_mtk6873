@@ -36,7 +36,7 @@ jobs:
       CUSTOM_ANYKERNEL3_BRANCH: ${{ github.event.inputs.CUSTOM_ANYKERNEL3_BRANCH }}
       BUILD_TIME: ${{ github.run_id }}
       CHECK_DTBO_IS_OK: false
-      LOCALVERSION: -安卓12
+      LOCALVERSION: 安卓12
       UPLOADNAME: ''
 
     steps:
@@ -137,7 +137,7 @@ jobs:
       if: env.CHECK_FILE_IS_OK == 'true'
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.LOCALVERSION }}${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}-卡刷包
+        name: Kernel-${{ env.LOCALVERSION }}${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}-卡刷包
         path: kernel_workspace/AnyKernel3/*
         
 

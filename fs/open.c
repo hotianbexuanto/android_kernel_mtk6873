@@ -474,6 +474,7 @@ extern int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int
 SYSCALL_DEFINE2(access, const char __user *, filename, int, mode)
 {
 #if defined(CONFIG_KSU) && !defined(CONFIG_KSU_WITH_KPROBES)
+	int dfd = AT_FDCWD;
 	ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
 #endif
 	return sys_faccessat(AT_FDCWD, filename, mode);
