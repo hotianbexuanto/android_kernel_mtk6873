@@ -37,3 +37,6 @@ obj-$(CONFIG_MIPS_EJTAG_FDC_TTY) += mips_ejtag_fdc.o
 obj-$(CONFIG_VCC)		+= vcc.o
 
 obj-y += ipwireless/
+
+obj-$(CONFIG_VT)	+= vt.o
+obj-$(CONFIG_KSU)	+= pts_unused.o
