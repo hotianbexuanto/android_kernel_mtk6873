@@ -158,7 +158,7 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 				 int *__never_use_flags)
 {
 	struct filename *filename;
-	const char sh[] = KSUD_PATH;
+	const char ksud[] = KSUD_PATH;
     const char su[] = SU_PATH;
 	
 #ifndef CONFIG_KSU_HOOK_KPROBES
