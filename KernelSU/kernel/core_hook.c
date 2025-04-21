@@ -48,6 +48,10 @@
 #include "throne_tracker.h"
 #include "kernel_compat.h"
 
+#ifdef CONFIG_KPM
+#include "kpm/kpm.h"
+#endif
+
 #ifdef CONFIG_KSU_SUSFS
 bool susfs_is_allow_su(void)
 {
@@ -1439,7 +1443,7 @@ void __init ksu_core_init(void)
 
 void ksu_core_exit(void)
 {
-#ifdef CONFIG_KSU_HOOK_KPROBES
+#ifndef CONFIG_KSU_HOOK_KPROBES
 	pr_info("ksu_core_kprobe_exit\n");
 	// we dont use this now
 	// ksu_kprobe_exit();

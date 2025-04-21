@@ -34,7 +34,8 @@ config KSU_GKI_KERNEL
 config KSU_HOOK_KPROBES
     bool
     depends on KSU && KPROBES && KSU_GKI_KERNEL
-    default y if !KSU_MANUAL_HOOK
+    default y if KSU_MANUAL_HOOK
+    default n if !KSU_MANUAL_HOOK
     help
       Internal flags for hooks based on KSU kprobes.
 
@@ -48,6 +49,7 @@ config KSU_ALLOWLIST_WORKAROUND
 
 config KPM
 	  bool "Enable SukiSU KPM"
+	  depends on KSU
 	  default n
 	  help
 	    Enabling this option will activate the KPM feature of SukiSU.

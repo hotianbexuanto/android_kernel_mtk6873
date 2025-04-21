@@ -70,7 +70,7 @@
 #endif
 
 #else
-#ifdef CONFIG_KSU_HOOK_KPROBES
+#ifndef CONFIG_KSU_HOOK_KPROBES
 #error "Unsupported arch"
 #endif
 #endif
