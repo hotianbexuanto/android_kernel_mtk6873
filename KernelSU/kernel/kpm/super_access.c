@@ -104,7 +104,7 @@ DYNAMIC_STRUCT_END(mnt_namespace)
 
 #include <linux/kprobes.h>
 
-#ifndef CONFIG_KSU_HOOK_KPROBES
+#ifdef CONFIG_KPROBES
 DYNAMIC_STRUCT_BEGIN(kprobe)
     DEFINE_MEMBER(kprobe, addr)
     DEFINE_MEMBER(kprobe, symbol_name)
@@ -194,7 +194,7 @@ struct DynamicStructInfo* dynamic_struct_infos[] = {
     STRUCT_INFO(mount),
     STRUCT_INFO(vfsmount),
     STRUCT_INFO(mnt_namespace),
-    #ifndef CONFIG_KSU_HOOK_KPROBES
+    #ifdef CONFIG_KPROBES
         STRUCT_INFO(kprobe),
     #endif
     STRUCT_INFO(vm_area_struct),

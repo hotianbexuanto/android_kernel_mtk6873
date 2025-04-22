@@ -34,8 +34,7 @@ config KSU_GKI_KERNEL
 config KSU_HOOK_KPROBES
     bool
     depends on KSU && KPROBES && KSU_GKI_KERNEL
-    default y if KSU_MANUAL_HOOK
-    default n if !KSU_MANUAL_HOOK
+    default y if !KSU_MANUAL_HOOK
     help
       Internal flags for hooks based on KSU kprobes.
 
@@ -65,7 +64,7 @@ config KSU_SUSFS
       Patch and Enable SUSFS to kernel with KernelSU.
 
 config KSU_SUSFS_HAS_MAGIC_MOUNT
-    bool "Say yes if the current KernelSU repo has magic mount implemented (default n)"
+    bool "Say yes if the current KernelSU repo has magic mount implemented (default y)"
     depends on KSU
     default y
     help
