@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
 
 
@@ -86,14 +86,14 @@ jobs:
     
     
     - name: 上传 Anykernel3
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: 安卓12-OPPO-A92s内核-卡刷包
         path: kernel_workspace/AnyKernel3/*
         
 
     - name: 上传编译内核
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: mtk6873内核-Image.gz-dtb
         path: kernel_workspace/android-kernel/out/arch/arm64/boot/Image.gz-dtb
