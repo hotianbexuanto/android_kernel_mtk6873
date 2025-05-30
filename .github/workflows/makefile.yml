@@ -2,8 +2,11 @@ name: 编译OPPO-A92s-安卓12内核
             支持ksu docker lxc
 
 on:
+  push:
   workflow_dispatch:
-
+  schedule:
+    - cron: '0 0 * * 5' # Run every friday at midnight
+    
 jobs:
   build:
 
