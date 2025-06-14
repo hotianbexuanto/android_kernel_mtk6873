@@ -571,6 +571,7 @@ struct compat_getdents_callback {
 	bool is_base_dentry_android_data_root_dir;
 	bool is_base_dentry_sdcard_root_dir;
 #endif
+	int prev_reclen;
 	int count;
 	int error;
 };
