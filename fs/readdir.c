@@ -24,7 +24,8 @@
 #include <linux/uaccess.h>
 #ifdef CONFIG_KSU_SUSFS_SUS_PATH
 #include <linux/susfs_def.h>
-extern int susfs_sus_ino_for_filldir64(unsigned long ino);
+extern bool susfs_is_sus_android_data_d_name_found(const char *d_name);
+extern bool susfs_is_sus_sdcard_d_name_found(const char *d_name);
 #endif
 
 int iterate_dir(struct file *file, struct dir_context *ctx)
@@ -138,7 +139,8 @@ static int fillonedir(struct dir_context *ctx, const char *name, int namlen,
 	if (buf->result)
 		return -EINVAL;
 #ifdef CONFIG_KSU_SUSFS_SUS_PATH
-	if (likely(current->susfs_task_state & TASK_STRUCT_NON_ROOT_USER_APP_PROC) && susfs_sus_ino_for_filldir64(ino)) {
+	if (likely(current->susfs_task_state & TASK_STRUCT_NON_ROOT_USER_APP_PROC) && 
+           (susfs_is_sus_android_data_d_name_found(name) || susfs_is_sus_sdcard_d_name_found(name))) {
 		return 0;
 	}
 #endif
@@ -218,7 +220,8 @@ static int filldir(struct dir_context *ctx, const char *name, int namlen,
 		sizeof(long));
 
 #ifdef CONFIG_KSU_SUSFS_SUS_PATH
-	if (likely(current->susfs_task_state & TASK_STRUCT_NON_ROOT_USER_APP_PROC) && susfs_sus_ino_for_filldir64(ino)) {
+	if (likely(current->susfs_task_state & TASK_STRUCT_NON_ROOT_USER_APP_PROC) && 
+           (susfs_is_sus_android_data_d_name_found(name) || susfs_is_sus_sdcard_d_name_found(name))) {
 		return 0;
 	}
 #endif
@@ -313,7 +316,8 @@ static int filldir64(struct dir_context *ctx, const char *name, int namlen,
 		sizeof(u64));
 
 #ifdef CONFIG_KSU_SUSFS_SUS_PATH
-	if (likely(current->susfs_task_state & TASK_STRUCT_NON_ROOT_USER_APP_PROC) && susfs_sus_ino_for_filldir64(ino)) {
+	if (likely(current->susfs_task_state & TASK_STRUCT_NON_ROOT_USER_APP_PROC) && 
+           (susfs_is_sus_android_data_d_name_found(name) || susfs_is_sus_sdcard_d_name_found(name))) {
 		return 0;
 	}
 #endif
@@ -413,7 +417,8 @@ static int compat_fillonedir(struct dir_context *ctx, const char *name,
 	if (buf->result)
 		return -EINVAL;
 #ifdef CONFIG_KSU_SUSFS_SUS_PATH
-	if (likely(current->susfs_task_state & TASK_STRUCT_NON_ROOT_USER_APP_PROC) && susfs_sus_ino_for_filldir64(ino)) {
+	if (likely(current->susfs_task_state & TASK_STRUCT_NON_ROOT_USER_APP_PROC) && 
+           (susfs_is_sus_android_data_d_name_found(name) || susfs_is_sus_sdcard_d_name_found(name))) {
 		return 0;
 	}
 #endif
@@ -490,7 +495,8 @@ static int compat_filldir(struct dir_context *ctx, const char *name, int namlen,
 	if (reclen > buf->count)
 		return -EINVAL;
 #ifdef CONFIG_KSU_SUSFS_SUS_PATH
-	if (likely(current->susfs_task_state & TASK_STRUCT_NON_ROOT_USER_APP_PROC) && susfs_sus_ino_for_filldir64(ino)) {
+	if (likely(current->susfs_task_state & TASK_STRUCT_NON_ROOT_USER_APP_PROC) && 
+           (susfs_is_sus_android_data_d_name_found(name) || susfs_is_sus_sdcard_d_name_found(name))) {
 		return 0;
 	}
 #endif

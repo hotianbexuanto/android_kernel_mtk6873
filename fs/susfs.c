@@ -474,7 +474,7 @@ static int susfs_update_sus_kstat_inode(char *target_pathname) {
 	}
 
 	// We don't allow path of which filesystem type is "tmpfs", because its inode->i_ino is starting from 1 again,
-	// which will cause wrong comparison in function susfs_sus_ino_for_filldir64()
+	// which will cause wrong comparison when checking directory names
 	if (strcmp(p.mnt->mnt_sb->s_type->name, "tmpfs") == 0) {
 		SUSFS_LOGE("target_pathname: '%s' cannot be added since its filesystem is 'tmpfs'\n", target_pathname);
 		path_put(&p);
