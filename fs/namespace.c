@@ -3224,6 +3224,12 @@ long do_mount(const char *dev_name, const char __user *dir_name,
 		}
 	}
 #endif
+#if defined(CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT) && defined(CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT)
+	// Just for the compatibility of Magic Mount KernelSU
+	if (!retval && susfs_is_auto_add_sus_ksu_default_mount_enabled && susfs_is_current_ksu_domain()) {
+		susfs_auto_add_sus_ksu_default_mount(dir_name);
+	}
+#endif
 dput_out:
 	path_put(&path);
 	return retval;
