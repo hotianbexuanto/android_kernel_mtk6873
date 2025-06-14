@@ -1072,13 +1072,3 @@ int susfs_set_media_provider_uid(unsigned int uid) {
 	return 0;
 }
 
-static inline bool is_i_uid_in_android_data_not_allowed(uid_t i_uid) {
-	struct st_susfs_sus_path_list *cursor = NULL;
-	list_for_each_entry(cursor, &LH_SUS_PATH_ANDROID_DATA, list) {
-		if (cursor->info.i_uid == i_uid) {
-			return true;
-		}
-	}
-	return false;
-}
-
