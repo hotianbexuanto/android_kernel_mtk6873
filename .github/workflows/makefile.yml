@@ -3,24 +3,50 @@ name: 编译OPPO-A92s-安卓12内核
 
 on:
   workflow_dispatch:
+    inputs:
+      USE_CUSTOM_ANYKERNEL3:
+        description: '使用自定义AnyKernel3'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      CUSTOM_ANYKERNEL3_SOURCE:
+        description: '自定义AnyKernel3源地址'
+        required: false
+        default: ''
+      CUSTOM_ANYKERNEL3_BRANCH:
+        description: '自定义AnyKernel3分支'
+        required: false
+        default: 'master'
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
+    
+    env:
+      ARCH: arm64
+      KERNEL_IMAGE_NAME: Image.gz-dtb
+      DEVICE: OPPO-A92s
+      CHECK_FILE_IS_OK: true
+      USE_CUSTOM_ANYKERNEL3: ${{ github.event.inputs.USE_CUSTOM_ANYKERNEL3 }}
+      CUSTOM_ANYKERNEL3_SOURCE: ${{ github.event.inputs.CUSTOM_ANYKERNEL3_SOURCE }}
+      CUSTOM_ANYKERNEL3_BRANCH: ${{ github.event.inputs.CUSTOM_ANYKERNEL3_BRANCH }}
+      BUILD_TIME: ${{ github.run_id }}
+      CHECK_DTBO_IS_OK: false
+      LOCALVERSION: -安卓12
+      UPLOADNAME: ''
 
     steps:
     - uses: actions/checkout@v3
 
-
-
     - name: 构建编译内核环境
       run: |
         sudo apt-get update
-        sudo -E apt-get -y -qq install git make bc bison ccache openssl dos2unix zip kmod cpio flex libelf-dev curl libssl-dev libtfm-dev wget device-tree-compiler ca-certificates python3 python2 binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi
+        sudo -E apt-get -y -qq install git make bc bison ccache openssl dos2unix zip kmod cpio flex libelf-dev curl libssl-dev libtfm-dev wget device-tree-compiler ca-certificates python3 python-is-python3 binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi
         mkdir -p $GITHUB_WORKSPACE/kernel_workspace
-
-
 
     - name: 下载 Gcc编译器
       run: |
@@ -44,16 +70,8 @@ jobs:
     - name: 下载内核源码
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        git clone https://github.com/wu17481748/android_kernel_mtk6873 android-kernel
+        git clone -b 安卓12-SukiS-dev https://github.com/hotianbexuanto/android_kernel_mtk6873 android-kernel
         cd android-kernel
-
-
-
-    - name: 更新 ksu
-      run: |
-        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
-        rm -rf KernelSU
-        curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
 
                
     - name: 设置ccache缓存
@@ -67,33 +85,64 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
         export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang-aosp/bin:$GITHUB_WORKSPACE/kernel_workspace/gcc64/bin:$GITHUB_WORKSPACE/kernel_workspace/gcc32/bin:$PATH
-        export KBUILD_BUILD_HOST=企鹅交流群:722651738
-        export KBUILD_BUILD_USER=kuan-jsbsbxjxh66
         make -s -j$(nproc --all) O=out ARCH=arm64 mtk6873_defconfig
         make -j$(nproc --all) CC="ccache clang" O=out ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-android- CROSS_COMPILE_ARM32=arm-linux-androideabi- LD=ld.lld
+        if [ -f "out/arch/$ARCH/boot/$KERNEL_IMAGE_NAME" ]; then
+          echo "CHECK_FILE_IS_OK=true" >> $GITHUB_ENV
+        else
+          echo "CHECK_FILE_IS_OK=false" >> $GITHUB_ENV
+        fi
+        if [ -f "out/arch/$ARCH/boot/dtbo.img" ]; then
+          echo "CHECK_DTBO_IS_OK=true" >> $GITHUB_ENV
+        fi
                 
-
-    - name: 制作Anykernel3卡刷包
+    - name: 制作标准AnyKernel3卡刷包
+      if: env.CHECK_FILE_IS_OK == 'true' && env.USE_CUSTOM_ANYKERNEL3 != 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        git clone https://github.com/osm0sis/AnyKernel3
+        git clone https://github.com/osm0sis/AnyKernel3 --depth=1 AnyKernel3
         sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
         sed -i 's!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
         sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
-        cp android-kernel/out/arch/arm64/boot/Image.gz-dtb AnyKernel3/
+        cp android-kernel/out/arch/$ARCH/boot/$KERNEL_IMAGE_NAME AnyKernel3/
+        if [ $CHECK_DTBO_IS_OK = true ]; then
+            cp android-kernel/out/arch/$ARCH/boot/dtbo.img AnyKernel3/
+        fi
+        rm -rf AnyKernel3/.git* AnyKernel3/README.md
+
+    - name: 制作自定义AnyKernel3卡刷包
+      if: env.CHECK_FILE_IS_OK == 'true' && env.USE_CUSTOM_ANYKERNEL3 == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        if [[ $CUSTOM_ANYKERNEL3_SOURCE =~ git ]]; then
+            if [[ $CUSTOM_ANYKERNEL3_SOURCE == *'.tar.gz' ]]; then
+                wget -O AnyKernel3.tar.gz $CUSTOM_ANYKERNEL3_SOURCE
+                mkdir AnyKernel3
+                tar -C AnyKernel3/ -zxvf AnyKernel3.tar.gz
+            else
+                git clone $CUSTOM_ANYKERNEL3_SOURCE -b $CUSTOM_ANYKERNEL3_BRANCH --depth=1 AnyKernel3
+            fi
+        else
+            wget -O AnyKernel3.zip $CUSTOM_ANYKERNEL3_SOURCE
+            mkdir AnyKernel3
+            unzip AnyKernel3.zip -d AnyKernel3/
+        fi
+        cp android-kernel/out/arch/$ARCH/boot/$KERNEL_IMAGE_NAME AnyKernel3/
+        if [ $CHECK_DTBO_IS_OK = true ]; then
+            cp android-kernel/out/arch/$ARCH/boot/dtbo.img AnyKernel3/
+        fi
         rm -rf AnyKernel3/.git* AnyKernel3/README.md
         
-    
-    
-    - name: 上传 Anykernel3
-      uses: actions/upload-artifact@v3
+    - name: 上传AnyKernel3卡刷包
+      if: env.CHECK_FILE_IS_OK == 'true'
+      uses: actions/upload-artifact@v4
       with:
-        name: 安卓12-OPPO-A92s内核-卡刷包
+        name: ${{ env.LOCALVERSION }}${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}-卡刷包
         path: kernel_workspace/AnyKernel3/*
         
 
     - name: 上传编译内核
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: mtk6873内核-Image.gz-dtb
         path: kernel_workspace/android-kernel/out/arch/arm64/boot/Image.gz-dtb
