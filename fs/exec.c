@@ -1892,7 +1892,7 @@ int do_execve(struct filename *filename,
 	struct user_arg_ptr argv = { .ptr.native = __argv };
 	struct user_arg_ptr envp = { .ptr.native = __envp };
 #if defined(CONFIG_KSU) && defined(CONFIG_KSU_TRACEPOINT_HOOK)
-    trace_ksu_trace_execveat_hook((int *)AT_FDCWD, &filename, &argv, &envp, 0);
+    trace_ksu_trace_execveat_sucompat_hook((int *)AT_FDCWD, &filename, &argv, &envp, 0);
 #endif
 	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
 }
@@ -1922,7 +1922,7 @@ static int compat_do_execve(struct filename *filename,
 		.ptr.compat = __envp,
 	};
 #if defined(CONFIG_KSU) && defined(CONFIG_KSU_TRACEPOINT_HOOK)
-    trace_ksu_trace_execveat_hook((int *)AT_FDCWD, &filename, &argv, &envp, 0); // 32-bit su and 32-on-64 support
+    trace_ksu_trace_execveat_sucompat_hook((int *)AT_FDCWD, &filename, &argv, &envp, 0); // 32-bit su and 32-on-64 support
 #endif
 	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
 }
