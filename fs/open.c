@@ -31,6 +31,9 @@
 #include <linux/ima.h>
 #include <linux/dnotify.h>
 #include <linux/compat.h>
+#ifdef CONFIG_KSU_SUSFS_SUS_SU
+#include <linux/susfs_def.h>
+#endif
 
 #include "internal.h"
 
@@ -363,10 +366,30 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
  * We do this by temporarily clearing all FS-related capabilities and
  * switching the fsuid/fsgid around to the real ones.
  */
+
+#ifdef CONFIG_KSU_SUSFS_SUS_SU
+extern bool susfs_is_sus_su_hooks_enabled __read_mostly;
+extern bool __ksu_is_allow_uid(uid_t uid);
+extern int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
+			int *flags);
+#endif
+
 SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
 {
 #if defined(CONFIG_KSU) && defined(CONFIG_KSU_TRACEPOINT_HOOK)
 	trace_ksu_trace_faccessat_hook(&dfd, &filename, &mode, NULL);
+#endif
+
+#ifdef CONFIG_KSU_SUSFS_SUS_SU
+	if (likely(susfs_is_current_proc_su_not_allowed())) {
+		goto orig_flow;
+	}
+	if (likely(susfs_is_sus_su_hooks_enabled) &&
+		unlikely(__ksu_is_allow_uid(current_uid().val)))
+	{
+		ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
+	}
+orig_flow:
 #endif
 
 	const struct cred *old_cred;
