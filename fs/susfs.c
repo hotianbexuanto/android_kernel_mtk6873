@@ -468,7 +468,7 @@ static void susfs_update_sus_mount_inode(char *target_pathname) {
 	/* It is important to check if the mount has a legit peer group id, if so we cannot add them to sus_mount,
 	 * since there are chances that the mount is a legit mountpoint, and it can be misued by other susfs functions in future.
 	 * And by doing this it won't affect the sus_mount check as other susfs functions check by mnt->mnt_id
-	 * instead of INODE_STATE_SUS_MOUNT.
+	 * instead of BIT_SUS_MOUNT flag.
 	 */
 	mnt = real_mount(p.mnt);
 	if (mnt->mnt_group_id > 0 && // 0 means no peer group
