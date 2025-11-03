@@ -36,6 +36,7 @@
 #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
 extern bool susfs_is_current_ksu_domain(void);
 extern bool susfs_is_current_zygote_domain(void);
+extern bool susfs_is_boot_completed_triggered;
 
 static DEFINE_IDA(susfs_mnt_id_ida);
 static DEFINE_IDA(susfs_mnt_group_ida);
@@ -1412,7 +1413,7 @@ bypass_orig_flow:
 
 #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
 	// If caller process is zygote and not doing unshare, so we just reorder the mnt_id
-	if (likely(is_current_zygote_domain) && !(flag & CL_ZYGOTE_COPY_MNT_NS)) {
+	if (likely(susfs_is_current_zygote_domain()) && !(flag & CL_ZYGOTE_COPY_MNT_NS)) {
 		mnt->mnt.susfs_mnt_id_backup = mnt->mnt_id;
 		mnt->mnt_id = current->susfs_last_fake_mnt_id++;
 	}
