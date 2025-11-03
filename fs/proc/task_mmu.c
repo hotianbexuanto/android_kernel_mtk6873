@@ -896,16 +896,12 @@ static int show_smap(struct seq_file *m, void *v)
 		susfs_is_current_proc_umounted())
 	{
 		show_map_vma(m, vma);
-		SEQ_PUT_DEC("Size:           ", vma->vm_end - vma->vm_start);
-		SEQ_PUT_DEC(" kB\nKernelPageSize: ", vma_kernel_pagesize(vma));
-		SEQ_PUT_DEC(" kB\nMMUPageSize:    ", vma_mmu_pagesize(vma));
-		seq_puts(m, " kB\n");
+		seq_printf(m, "Size:           %8lu kB\n", (vma->vm_end - vma->vm_start) >> 10);
+		seq_printf(m, "KernelPageSize: %8lu kB\n", vma_kernel_pagesize(vma) >> 10);
+		seq_printf(m, "MMUPageSize:    %8lu kB\n", vma_mmu_pagesize(vma) >> 10);
 		__show_smap(m, &mss);
 		seq_printf(m, "THPeligible:    %d\n", 0);
-		if (arch_pkeys_enabled())
-				seq_printf(m, "ProtectionKey:  %8u\n", vma_pkey(vma));
-		seq_puts(m, "VmFlags: mr mw me");
-		seq_putc(m, '\n');
+		show_smap_vma_flags(m, vma);
 		return 0;
 	}
 #endif

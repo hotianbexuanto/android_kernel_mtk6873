@@ -87,4 +87,9 @@ static inline bool susfs_is_current_proc_umounted(void) {
 static inline void susfs_set_current_proc_umounted(void) {
 	set_ti_thread_flag(&current->thread_info, TIF_PROC_UMOUNTED);
 }
+
+#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+extern void susfs_reorder_mnt_id(void);
+#endif
+
 #endif // #ifndef KSU_SUSFS_DEF_H
