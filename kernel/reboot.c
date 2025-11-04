@@ -269,7 +269,7 @@ EXPORT_SYMBOL_GPL(kernel_power_off);
 
 static DEFINE_MUTEX(reboot_mutex);
 
-#if defined(CONFIG_KSU) && defined(CONFIG_KSU_TRACEPOINT_HOOK)
+#ifdef CONFIG_KSU
 __attribute__((hot))
 extern void ksu_handle_reboot(int magic1, int magic2, void __user * arg);
 #endif
@@ -289,7 +289,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 	char buffer[256];
 	int ret = 0;
 
-#if defined(CONFIG_KSU) && defined(CONFIG_KSU_TRACEPOINT_HOOK)
+#ifdef CONFIG_KSU
        ksu_handle_reboot(magic1, magic2, arg);
 #endif
 
