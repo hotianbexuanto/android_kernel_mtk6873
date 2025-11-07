@@ -22,6 +22,17 @@
 #include <linux/compat.h>
 
 #include <linux/uaccess.h>
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+#include <linux/susfs_def.h>
+#endif
+
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+extern bool susfs_is_sus_android_data_d_name_found(const char *d_name);
+extern bool susfs_is_sus_sdcard_d_name_found(const char *d_name);
+extern bool susfs_is_inode_sus_path(struct inode *inode);
+extern bool susfs_is_base_dentry_android_data_dir(struct dentry* base);
+extern bool susfs_is_base_dentry_sdcard_dir(struct dentry* base);
+#endif
 
 int iterate_dir(struct file *file, struct dir_context *ctx)
 {
@@ -196,6 +207,9 @@ struct getdents_callback {
 	struct linux_dirent __user * previous;
 	int count;
 	int error;
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+	struct file *file;
+#endif
 };
 
 static int filldir(struct dir_context *ctx, const char *name, int namlen,
@@ -207,10 +221,27 @@ static int filldir(struct dir_context *ctx, const char *name, int namlen,
 	unsigned long d_ino;
 	int reclen = ALIGN(offsetof(struct linux_dirent, d_name) + namlen + 2,
 		sizeof(long));
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+	struct inode *inode;
+#endif
 
 	buf->error = verify_dirent_name(name, namlen);
 	if (unlikely(buf->error))
 		return buf->error;
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+	if (likely(susfs_is_current_proc_umounted())) {
+		inode = d_inode(buf->file->f_path.dentry);
+		if (inode) {
+			if ((susfs_is_base_dentry_android_data_dir(buf->file->f_path.dentry) &&
+				 susfs_is_sus_android_data_d_name_found(name)) ||
+				(susfs_is_base_dentry_sdcard_dir(buf->file->f_path.dentry) &&
+				 susfs_is_sus_sdcard_d_name_found(name)))
+			{
+				return 0;
+			}
+		}
+	}
+#endif
 	buf->error = -EINVAL;	/* only used if we fail.. */
 	if (reclen > buf->count)
 		return -EINVAL;
@@ -266,6 +297,10 @@ SYSCALL_DEFINE3(getdents, unsigned int, fd,
 	if (!f.file)
 		return -EBADF;
 
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+	buf.file = f.file;
+#endif
+
 	error = iterate_dir(f.file, &buf.ctx);
 	if (error >= 0)
 		error = buf.error;
@@ -286,6 +321,9 @@ struct getdents_callback64 {
 	struct linux_dirent64 __user * previous;
 	int count;
 	int error;
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+	struct file *file;
+#endif
 };
 
 static int filldir64(struct dir_context *ctx, const char *name, int namlen,
@@ -296,10 +334,27 @@ static int filldir64(struct dir_context *ctx, const char *name, int namlen,
 		container_of(ctx, struct getdents_callback64, ctx);
 	int reclen = ALIGN(offsetof(struct linux_dirent64, d_name) + namlen + 1,
 		sizeof(u64));
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+	struct inode *inode;
+#endif
 
 	buf->error = verify_dirent_name(name, namlen);
 	if (unlikely(buf->error))
 		return buf->error;
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+	if (likely(susfs_is_current_proc_umounted())) {
+		inode = d_inode(buf->file->f_path.dentry);
+		if (inode) {
+			if ((susfs_is_base_dentry_android_data_dir(buf->file->f_path.dentry) &&
+				 susfs_is_sus_android_data_d_name_found(name)) ||
+				(susfs_is_base_dentry_sdcard_dir(buf->file->f_path.dentry) &&
+				 susfs_is_sus_sdcard_d_name_found(name)))
+			{
+				return 0;
+			}
+		}
+	}
+#endif
 	buf->error = -EINVAL;	/* only used if we fail.. */
 	if (reclen > buf->count)
 		return -EINVAL;
@@ -351,6 +406,10 @@ SYSCALL_DEFINE3(getdents64, unsigned int, fd,
 	f = fdget_pos(fd);
 	if (!f.file)
 		return -EBADF;
+
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+	buf.file = f.file;
+#endif
 
 	error = iterate_dir(f.file, &buf.ctx);
 	if (error >= 0)
