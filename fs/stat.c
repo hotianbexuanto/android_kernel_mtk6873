@@ -18,7 +18,7 @@
 #include <linux/pagemap.h>
 #include <linux/compat.h>
 
-#if defined(CONFIG_KSU_SUSFS_SUS_KSTAT) || defined(CONFIG_KSU_SUSFS_SUS_SU)
+#ifdef CONFIG_KSU_SUSFS_SUS_KSTAT
 #include <linux/susfs_def.h>
 #endif
 #include <linux/uaccess.h>

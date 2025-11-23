@@ -54,6 +54,9 @@ extern bool susfs_is_base_dentry_android_data_dir(struct dentry* base);
 extern bool susfs_is_base_dentry_sdcard_dir(struct dentry* base);
 extern const struct qstr susfs_fake_qstr_name;
 #endif
+#ifdef CONFIG_KSU_SUSFS_OPEN_REDIRECT
+extern struct filename* susfs_get_redirected_path(unsigned long ino);
+#endif
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/namei.h>
@@ -3893,7 +3896,6 @@ struct file *do_filp_open(int dfd, struct filename *pathname,
 
 #ifdef CONFIG_KSU_SUSFS_OPEN_REDIRECT
 	if (!IS_ERR(filp) && unlikely(filp->f_inode->i_mapping->flags & BIT_OPEN_REDIRECT) && current_uid().val < 2000) {
-		extern struct filename* susfs_get_redirected_path(unsigned long ino);
 		fake_pathname = susfs_get_redirected_path(filp->f_inode->i_ino);
 		if (!IS_ERR(fake_pathname)) {
 			restore_nameidata();

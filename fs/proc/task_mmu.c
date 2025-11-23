@@ -21,6 +21,7 @@
 #include <linux/mm_inline.h>
 #if defined(CONFIG_KSU_SUSFS_SUS_KSTAT) || defined(CONFIG_KSU_SUSFS_SUS_MAP)
 #include <linux/susfs_def.h>
+extern bool susfs_is_current_proc_umounted(void);
 #endif
 
 #include <asm/elf.h>
