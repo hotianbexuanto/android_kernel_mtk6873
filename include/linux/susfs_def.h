@@ -19,7 +19,7 @@
 #define CMD_SUSFS_ADD_SUS_KSTAT 0x55570
 #define CMD_SUSFS_UPDATE_SUS_KSTAT 0x55571
 #define CMD_SUSFS_ADD_SUS_KSTAT_STATICALLY 0x55572
-#define CMD_SUSFS_ADD_TRY_UMOUNT 0x55580
+#define CMD_SUSFS_ADD_TRY_UMOUNT 0x55580 /* deprecated */
 #define CMD_SUSFS_SET_UNAME 0x55590
 #define CMD_SUSFS_ENABLE_LOG 0x555a0
 #define CMD_SUSFS_SET_CMDLINE_OR_BOOTCONFIG 0x555b0
@@ -53,7 +53,7 @@
  * task_struct->thread_info.flags => storing flag 'TIF_'
  *
  * NOTE: For kernel 4.14, we keep AS_FLAGS at bit 24-30 since i_mapping->flags
- * may be 32-bit. For kernel 6.12+, these should be 33-39.
+ * is 32-bit. For kernel 6.12+, these should be 33-39.
  */
  // thread_info->flags is unsigned long :D
 #define TIF_PROC_UMOUNTED 33
@@ -94,7 +94,7 @@
 #define ND_STATE_OPEN_LAST 64
 #define ND_STATE_LAST_SDCARD_SUS_PATH 128
 #define ND_FLAGS_LOOKUP_LAST		0x2000000
-
+ 
 #define MAGIC_MOUNT_WORKDIR "/debug_ramdisk/workdir"
 
 static inline bool susfs_is_current_proc_umounted(void) {
