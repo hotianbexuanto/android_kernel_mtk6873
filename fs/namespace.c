@@ -29,10 +29,6 @@
 
 #include "pnode.h"
 #include "internal.h"
-
-#if defined(CONFIG_KSU_SUSFS_SUS_MOUNT) || defined(CONFIG_KSU_SUSFS_TRY_UMOUNT)
-#include <linux/susfs_def.h>
-#endif
 #ifdef CONFIG_OPLUS_SECURE_GUARD
 #ifdef CONFIG_OPLUS_MOUNT_BLOCK
 #ifdef CONFIG_OPLUS_KEVENT_UPLOAD
@@ -40,16 +36,6 @@
 #endif /* CONFIG_OPLUS_KEVENT_UPLOAD */
 #endif /* CONFIG_OPLUS_MOUNT_BLOCK */
 #endif /* CONFIG_OPLUS_SECURE_GUARD*/
-
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-extern bool susfs_is_current_ksu_domain(void);
-extern bool susfs_is_current_zygote_domain(void);
-extern bool susfs_is_boot_completed_triggered;
-
-static DEFINE_IDA(susfs_ksu_mnt_group_ida);
-
-#define CL_COPY_MNT_NS BIT(25) /* used by copy_mnt_ns() */
-#endif
 
 /* Maximum number of mounts in a mount namespace */
 unsigned int sysctl_mount_max __read_mostly = 100000;
@@ -139,26 +125,7 @@ retry:
 
 static void mnt_free_id(struct mount *mnt)
 {
-	int id;
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-	// First check if susfs_mnt_id_backup == DEFAULT_KSU_MNT_ID
-	if (mnt->mnt.susfs_mnt_id_backup == DEFAULT_KSU_MNT_ID) {
-		return;
-	}
-
-	// Second if susfs_mnt_id_backup was set after mnt_id reorder, free it
-	if (likely(mnt->mnt.susfs_mnt_id_backup)) {
-		id = mnt->mnt.susfs_mnt_id_backup;
-		spin_lock(&mnt_id_lock);
-		ida_remove(&mnt_id_ida, id);
-		if (mnt_id_start > id)
-			mnt_id_start = id;
-		spin_unlock(&mnt_id_lock);
-		return;
-	}
-#endif
-
-	id = mnt->mnt_id;
+	int id = mnt->mnt_id;
 	spin_lock(&mnt_id_lock);
 	ida_remove(&mnt_id_ida, id);
 	if (mnt_id_start > id)
@@ -174,16 +141,6 @@ static void mnt_free_id(struct mount *mnt)
 static int mnt_alloc_group_id(struct mount *mnt)
 {
 	int res;
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-	if (!susfs_is_boot_completed_triggered && mnt->mnt_id >= DEFAULT_KSU_MNT_ID) {
-		if (!ida_pre_get(&susfs_ksu_mnt_group_ida, GFP_KERNEL))
-			return -ENOMEM;
-		res = ida_get_new_above(&susfs_ksu_mnt_group_ida,
-					DEFAULT_KSU_MNT_GROUP_ID,
-					&mnt->mnt_group_id);
-		return res;
-	}
-#endif
 
 	if (!ida_pre_get(&mnt_group_ida, GFP_KERNEL))
 		return -ENOMEM;
@@ -202,17 +159,7 @@ static int mnt_alloc_group_id(struct mount *mnt)
  */
 void mnt_release_group_id(struct mount *mnt)
 {
-	int id;
-
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-	if (!susfs_is_boot_completed_triggered && mnt->mnt_group_id >= DEFAULT_KSU_MNT_GROUP_ID) {
-		ida_remove(&susfs_ksu_mnt_group_ida, mnt->mnt_group_id);
-		mnt->mnt_group_id = 0;
-		return;
-	}
-#endif
-
-	id = mnt->mnt_group_id;
+	int id = mnt->mnt_group_id;
 	ida_remove(&mnt_group_ida, id);
 	if (mnt_group_start > id)
 		mnt_group_start = id;
@@ -287,10 +234,6 @@ static struct mount *alloc_vfsmnt(const char *name)
 		mnt->mnt_writers = 0;
 #endif
 		mnt->mnt.data = NULL;
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-		// Make sure mnt->mnt.susfs_mnt_id_backup is initialized every time.
-		mnt->mnt.susfs_mnt_id_backup = 0;
-#endif
 
 		INIT_HLIST_NODE(&mnt->mnt_hash);
 		INIT_LIST_HEAD(&mnt->mnt_child);
@@ -1157,58 +1100,9 @@ static struct mount *clone_mnt(struct mount *old, struct dentry *root,
 	struct mount *mnt;
 	int err;
 
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-	// - We do not check anymore for ksu process if boot-completed stage is triggered
-	//   just to stop the performance loss
-	if (susfs_is_boot_completed_triggered) {
-		goto skip_checking_for_ksu_proc;
-	}
-
-	// First we must check for ksu process because of magic mount
-	if (susfs_is_current_ksu_domain()) {
-		// if it is unsharing, we reuse the old->mnt_id
-		if (flag & CL_COPY_MNT_NS) {
-			mnt = alloc_vfsmnt(old->mnt_devname);
-			if (!mnt)
-				return ERR_PTR(-ENOMEM);
-			// Reuse original mnt_id
-			mnt_free_id(mnt);
-			mnt->mnt_id = old->mnt_id;
-			mnt->mnt.susfs_mnt_id_backup = DEFAULT_KSU_MNT_ID;
-			goto bypass_orig_flow;
-		}
-		// else we just go assign fake mnt_id
-		mnt = alloc_vfsmnt(old->mnt_devname);
-		if (!mnt)
-			return ERR_PTR(-ENOMEM);
-		// Assign fake KSU mnt_id
-		mnt_free_id(mnt);
-		mnt->mnt_id = DEFAULT_KSU_MNT_ID;
-		mnt->mnt.susfs_mnt_id_backup = DEFAULT_KSU_MNT_ID;
-		goto bypass_orig_flow;
-	}
-
-skip_checking_for_ksu_proc:
-	// Lastly for other processes of which old->mnt_id == DEFAULT_KSU_MNT_ID, go assign fake mnt_id
-	if (old->mnt_id == DEFAULT_KSU_MNT_ID) {
-		mnt = alloc_vfsmnt(old->mnt_devname);
-		if (!mnt)
-			return ERR_PTR(-ENOMEM);
-		// Assign fake KSU mnt_id
-		mnt_free_id(mnt);
-		mnt->mnt_id = DEFAULT_KSU_MNT_ID;
-		mnt->mnt.susfs_mnt_id_backup = DEFAULT_KSU_MNT_ID;
-		goto bypass_orig_flow;
-	}
-#endif
-
 	mnt = alloc_vfsmnt(old->mnt_devname);
 	if (!mnt)
 		return ERR_PTR(-ENOMEM);
-
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-bypass_orig_flow:
-#endif
 
 	if (sb->s_op->clone_mnt_data) {
 		mnt->mnt.data = sb->s_op->clone_mnt_data(old->mnt.data);
@@ -2453,7 +2347,6 @@ static int do_loopback(struct path *path, const char *old_name,
 		umount_tree(mnt, UMOUNT_SYNC);
 		unlock_mount_hash();
 	}
-
 out2:
 	unlock_mount(mp);
 out:
@@ -3159,9 +3052,6 @@ struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
 	copy_flags = CL_COPY_UNBINDABLE | CL_EXPIRE;
 	if (user_ns != ns->user_ns)
 		copy_flags |= CL_SHARED_TO_SLAVE | CL_UNPRIVILEGED;
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-	copy_flags |= CL_COPY_MNT_NS;
-#endif
 	new = copy_tree(old, old->mnt.mnt_root, copy_flags);
 	if (IS_ERR(new)) {
 		namespace_unlock();
@@ -3738,41 +3628,3 @@ const struct proc_ns_operations mntns_operations = {
 	.install	= mntns_install,
 	.owner		= mntns_owner,
 };
-
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-/* Reorder the mnt_id after all sus mounts are umounted during ksu_handle_setuid() */
-void susfs_reorder_mnt_id(void) {
-	struct mnt_namespace *mnt_ns = current->nsproxy->mnt_ns;
-	struct mount *mnt;
-	int first_mnt_id = 0;
-
-	if (!mnt_ns) {
-		return;
-	}
-
-	get_mnt_ns(mnt_ns);
-	first_mnt_id = list_first_entry(&mnt_ns->list, struct mount, mnt_list)->mnt_id;
-	list_for_each_entry(mnt, &mnt_ns->list, mnt_list) {
-		// It is very important that we don't reorder the sus mount if it is not umounted
-		if (mnt->mnt_id == DEFAULT_KSU_MNT_ID) {
-			continue;
-		}
-		WRITE_ONCE(mnt->mnt.susfs_mnt_id_backup, READ_ONCE(mnt->mnt_id));
-		WRITE_ONCE(mnt->mnt_id, first_mnt_id++);
-	}
-	put_mnt_ns(mnt_ns);
-}
-#endif
-#ifdef CONFIG_KSU_SUSFS
-bool susfs_is_mnt_devname_ksu(struct path *path) {
-	struct mount *mnt;
-
-	if (path && path->mnt) {
-		mnt = real_mount(path->mnt);
-		if (mnt && mnt->mnt_devname && !strcmp(mnt->mnt_devname, "KSU")) {
-			return true;
-		}
-	}
-	return false;
-}
-#endif

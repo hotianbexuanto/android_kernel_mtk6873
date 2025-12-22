@@ -3,19 +3,9 @@
 #include <linux/init.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
-#ifdef CONFIG_KSU_SUSFS_SUS_PROC_CMDLINE
-#include <linux/susfs_def.h>
-extern bool susfs_is_current_proc_umounted(void);
-#endif
 
 static int cmdline_proc_show(struct seq_file *m, void *v)
 {
-#ifdef CONFIG_KSU_SUSFS_SUS_PROC_CMDLINE
-	if (likely(susfs_is_current_proc_umounted())) {
-		seq_printf(m, "%s\n", SUSFS_FAKE_PROC_CMDLINE);
-		return 0;
-	}
-#endif
 	seq_printf(m, "%s\n", saved_command_line);
 	return 0;
 }
